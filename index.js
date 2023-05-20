@@ -14,10 +14,8 @@ app.get('/', (req, res) => {
 })
 
 
-
-
-const { MongoClient, ServerApiVersion ,ObjectId} = require('mongodb');
-const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.zwfejkx.mongodb.net/?retryWrites=true&w=majority`;
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
+const uri = `mongodb+srv://${ process.env.DB_USER }:${ process.env.DB_PASS }@cluster0.zwfejkx.mongodb.net/?retryWrites=true&w=majority`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -33,12 +31,12 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
 
-    const teddyCollection = client.db("teddyDb").collection("teddys") 
-    const bookToyCollection = client.db("teddyDb").collection("bookToys") 
-    const toyGalleryCollection =client.db("teddyDb").collection("toyGallery")
+    const teddyCollection = client.db("teddyDb").collection("teddys")
+    const bookToyCollection = client.db("teddyDb").collection("bookToys")
+    const toyGalleryCollection = client.db("teddyDb").collection("toyGallery")
 
 
-    app.get("/toyGallery",async(req,res)=>{
+    app.get("/toyGallery", async (req, res) => {
       const result = await toyGalleryCollection.find().toArray()
       res.send(result)
     })
@@ -50,29 +48,42 @@ async function run() {
     })
 
 
-    app.get('/bookToys',async(req,res)=>{ 
+    app.get('/bookToys', async (req, res) => {
       let query = {}
-      if(req.query?.email){
-        query = { email:req.query.email }
+      if (req.query?.email) {
+        query = { email: req.query.email }
       }
       const result = await bookToyCollection.find(query).toArray()
       res.send(result)
     })
-    
 
-    app.delete('/bookToys/:id',async(req,res)=>{
-      const id = req.params.id 
-      const query = {_id:new ObjectId(id)}
+
+    app.patch('/bookToy/:id', async (req, res) => {
+      const id = req.params.id
+      const filter = { _id: new ObjectId(id) }
+      const toyUpdate = req.body;
+      const update = {
+        $set: {
+          ...toyUpdate
+        }
+      };
+      const result = await bookToyCollection.updateOne(filter, update)
+      res.send(result)
+    })
+
+    app.delete('/bookToys/:id', async (req, res) => {
+      const id = req.params.id
+      const query = { _id: new ObjectId(id) }
       const result = await bookToyCollection.deleteOne(query)
       res.send(result)
     })
 
-    
+
 
     app.get('/toysdetails/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      try{
+      try {
         const result = await bookToyCollection.findOne(query);
         res.send(result);
       } catch (error) {
@@ -81,18 +92,18 @@ async function run() {
       }
     });
 
-      app.post('/bookToys',async(req,res)=>{  
-        const bookToy = req.body 
-        console.log(bookToy)
-        const result = await bookToyCollection.insertOne(bookToy)
-        res.send(result)
-      })
-      app.delete('/bookToys/:id',async(req,res)=>{
-        const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await bookToyCollection.deleteOne(query);
-        res.send(result);
-      })
+    app.post('/bookToys', async (req, res) => {
+      const bookToy = req.body
+      console.log(bookToy)
+      const result = await bookToyCollection.insertOne(bookToy)
+      res.send(result)
+    })
+    app.delete('/bookToys/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await bookToyCollection.deleteOne(query);
+      res.send(result);
+    })
 
 
     // Send a ping to confirm a successful connection
