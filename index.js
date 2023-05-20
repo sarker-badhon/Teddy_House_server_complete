@@ -53,24 +53,45 @@ async function run() {
     app.get('/bookToys',async(req,res)=>{ 
       let query = {}
       if(req.query?.email){
-        query = {email:req.query.email}
+        query = { email:req.query.email }
       }
-      const result = await bookToyCollection.find().toArray()
+      const result = await bookToyCollection.find(query).toArray()
+      res.send(result)
+    })
+    
+
+    app.delete('/bookToys/:id',async(req,res)=>{
+      const id = req.params.id 
+      const query = {_id:new ObjectId(id)}
+      const result = await bookToyCollection.deleteOne(query)
       res.send(result)
     })
 
-    app.get("/toysdetails/:id", async (req, res) => {  
+    
+
+    app.get('/toysdetails/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result = await bookToyCollection.findOne(query);
-      res.send(result);
-    }); 
+      try{
+        const result = await bookToyCollection.findOne(query);
+        res.send(result);
+      } catch (error) {
+        console.error(error);
+        res.status(400).send('Error Retrieving Toy Details');
+      }
+    });
 
       app.post('/bookToys',async(req,res)=>{  
         const bookToy = req.body 
         console.log(bookToy)
         const result = await bookToyCollection.insertOne(bookToy)
         res.send(result)
+      })
+      app.delete('/bookToys/:id',async(req,res)=>{
+        const id = req.params.id;
+        const query = { _id: new ObjectId(id) };
+        const result = await bookToyCollection.deleteOne(query);
+        res.send(result);
       })
 
 
